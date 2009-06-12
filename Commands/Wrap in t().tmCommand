@@ -7,27 +7,88 @@
 	<key>command</key>
 	<string>#!/usr/bin/env php
 &lt;?php
-if (isset($_ENV['TM_SELECTED_TEXT'])) {
-  $text = $_ENV['TM_SELECTED_TEXT'];
-  preg_match_all('/[!%@][\w_-]+/', $text, $matches);
-  echo "t(\${1:$text}";
-  if (!empty($matches[0])) {
-    $args = array();
-    $i = 2;
-    foreach ($matches[0] as $arg) {
-      $args[] = '\'' . $arg . '\' =&gt; ${' . $i++ . ':\\$var}';
+
+$args = array();
+$regex_get_args = '/[!%@][\w_-]+/';
+
+$selection_or_line = getenv('TM_SELECTED_TEXT');
+if (empty($selection_or_line)) {
+  $selection_or_line = getenv('TM_CURRENT_LINE');
+}
+
+// This is a bit complicated but deals with both current line and selections
+// with t() or just a string.
+if (!empty($selection_or_line)) {
+  // Regex to match a string and possible args.
+  $r = '^(.*?)'; // Capture code at beginning of line
+  $r .= '(?:t\()?'; // Optionally match an existing t(
+  $r .= '(["\'].+?(?&lt;!\\\)["\'])'; // Capture the string
+  $r .= '(?:.+?(?:array\((.+)\)))?'; // Optionally capture the args inside
+  $r .= '(?:\))?'; // Optionally match the closing parenthesis of t()
+  $r .= '(.*)'; // Capture all existing code on the line
+
+  preg_match("/$r/", $selection_or_line, $old_matches);
+  if (isset($old_matches[2])) {
+    $string = $old_matches[2];
+    // The line contains arguments
+    if (!empty($old_matches[3])) {
+      $old_args = $old_matches[3];
+      preg_match_all('/["\']([^,]+?)["\'][ =&gt;]+([^,)]*)/', $old_args, $old_args, PREG_SET_ORDER);
+      // Build an associative array with arg as key.
+      $old_args_array = array();
+      foreach ($old_args as $arg) {
+        $old_args_array[$arg[1]] = $arg[2];
+      }
     }
-    
-    echo ', array(' . implode(', ', $args) . ')';
+
+    // Get arguments from the new string.
+    preg_match_all($regex_get_args, $string, $new_args);
+
+    if (!empty($new_args[0])) {
+      $i = 2;
+      foreach ($new_args[0] as $arg) {
+        // Insert the old arg value if it's available, else use a default value.
+        $var = isset($old_args_array[$arg]) ? $old_args_array[$arg] : '$var';
+        $args[] = "'" . $arg . "' =&gt; \${" . $i++ . ':\\$' . substr($arg, 1) . '}';
+      }
+    }
   }
-  echo ')';
+}
+
+// Print the snippet.
+if (!empty($string)) {
+  $output = '';
+  // Text on current row before function.
+  if (isset($old_matches[1])) {
+    $output .= _esc($old_matches[1]);
+  }
+  $output .= 't(${1:' . $string . '}';
+  if (count($args)) {
+    $output .= ', array(' . implode(', ', $args) . ')';
+  }
+  $output .= ')'; // Close t()
+  // Text on current row after function.
+  if (isset($old_matches[4])) {
+    $output .= _esc($old_matches[4]);
+  }
+}
+else {
+  $output = $string;
+}
+print $output;
+
+// Escape $ to prevent interpretion by TextMate.
+function _esc($s) {
+  return str_replace('$', '\\$', $s);
 }</string>
+	<key>fallbackInput</key>
+	<string>line</string>
 	<key>input</key>
-	<string>none</string>
+	<string>selection</string>
 	<key>keyEquivalent</key>
 	<string>^~t</string>
 	<key>name</key>
-	<string>Wrap in t()</string>
+	<string>Wrap in/Reformat t()</string>
 	<key>output</key>
 	<string>insertAsSnippet</string>
 	<key>scope</key>
