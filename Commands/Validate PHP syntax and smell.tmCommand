@@ -24,6 +24,7 @@ if output.find("No syntax errors") == -1:
 # Check code smell
 smelly = {
 'FIXME': re.compile('FIXME'),
+'kpr': re.compile('kpr\('),
 'var_dump': re.compile('var_dump\('),
 'error_log': re.compile('error_log\('),
 'xdebug_print_function_stack': re.compile('xdebug_print_function_stack\('),
@@ -37,9 +38,7 @@ for line in code.split("\n"):
 		ex = smelly[smell]
 		if ex.search(line) and not ignore.search(line):
 			stdout.write("%s smells bad at line %i\n" % (smell, l))
-	l=l+1
-
-</string>
+	l=l+1</string>
 	<key>input</key>
 	<string>document</string>
 	<key>keyEquivalent</key>
