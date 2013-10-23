@@ -7,18 +7,8 @@
 	<key>command</key>
 	<string>#!/usr/bin/env php
 &lt;?php
-function goFormatVarExport($string) {
-	return preg_replace(array(
-		'/=&gt;\s+array\(/im',
-		'/array\(\s+\)/im',
-	), array(
-		'=&gt; array(',
-		'array()',
-	), str_replace('array (', 'array(', $string));
-}
-
+require(getenv('TM_BUNDLE_SUPPORT') . '/format.php');
 $content = file_get_contents('php://stdin');
-
 echo goFormatVarExport(var_export(json_decode($content, true), true));
 </string>
 	<key>input</key>

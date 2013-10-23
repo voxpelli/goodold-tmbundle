@@ -7,29 +7,28 @@
 	<key>command</key>
 	<string>#!/usr/bin/env php
 &lt;?php
-function goFormatVarExport($string) {
-	return preg_replace(array(
-		'/=&gt;\s+array\(/im',
-		'/array\(\s+\)/im',
-	), array(
-		'=&gt; array(',
-		'array()',
-	), str_replace('array (', 'array(', $string));
-}
-
+require(getenv('TM_BUNDLE_SUPPORT') . '/format.php');
 echo goFormatVarExport(file_get_contents('php://stdin'));
 </string>
 	<key>fallbackInput</key>
 	<string>none</string>
 	<key>input</key>
 	<string>selection</string>
+	<key>inputFormat</key>
+	<string>text</string>
 	<key>name</key>
 	<string>Format Var_Export</string>
-	<key>output</key>
-	<string>replaceSelectedText</string>
+	<key>outputCaret</key>
+	<string>heuristic</string>
+	<key>outputFormat</key>
+	<string>text</string>
+	<key>outputLocation</key>
+	<string>replaceInput</string>
 	<key>scope</key>
 	<string>source.php</string>
 	<key>uuid</key>
 	<string>7822682D-222B-47A6-A870-E661240C86DE</string>
+	<key>version</key>
+	<integer>2</integer>
 </dict>
 </plist>
