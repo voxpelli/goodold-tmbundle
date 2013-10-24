@@ -7,12 +7,26 @@ function goNormalizeIndentation($indentation) {
 	return ($softTabs ? str_pad('', $tabSize * $indentLevel) : str_pad('', $indentLevel, "\t")) . ($oddIndentation ? ' ' : '');
 }
 
-function goFormatVarExport($string) {
-	return preg_replace_callback('/^([ ]+)/im', 'goNormalizeIndentation', preg_replace(array(
+function goFormatVarExport($string, $input = null) {
+	$result = preg_replace_callback('/^([ ]+)/im', 'goNormalizeIndentation', preg_replace(array(
 		'/=>\s+array\(/im',
 		'/array\(\s+\)/im',
 	), array(
 		'=> array(',
 		'array()',
 	), str_replace('array (', 'array(', $string)));
+
+	if ($input) {
+		$matches = array();
+		preg_match('/^(\s*)[^\s]/', $input, $matches);
+		if (isset($matches[1])) {
+			$lines = explode("\n", $result);
+			foreach ($lines as $key => $value) {
+				$lines[$key] = $matches[1] . $lines[$key];
+			}
+			$result = implode("\n", $lines);
+		}
+	}
+
+	return $result;
 }

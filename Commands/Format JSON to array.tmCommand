@@ -9,7 +9,7 @@
 &lt;?php
 require(getenv('TM_BUNDLE_SUPPORT') . '/format.php');
 $content = file_get_contents('php://stdin');
-echo goFormatVarExport(var_export(json_decode($content, true), true));
+echo goFormatVarExport(var_export(json_decode($content, true), true), $content);
 </string>
 	<key>input</key>
 	<string>selection</string>
